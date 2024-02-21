@@ -7,12 +7,19 @@
   },
   "name": "little-birds",
   "version": "1.0.0",
-  "main": "app.js",
-  "type": "module",
+  "main": "app.ts",
   "scripts": {
-    "start": "nodemon app.js"
+    "build": "npx tsc",
+    "start": "node dist/app.js",
+    "dev": "nodemon app.ts"
   },
   "author": "",
   "license": "ISC",
-  "description": ""
+  "description": "",
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.3.3"
+  }
 }
