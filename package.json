@@ -15,7 +15,7 @@
   },
   "author": "Maaz Abdullah",
   "license": "ISC",
-  "description": "node service for ppu",
+  "description": "node service for PPU",
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
