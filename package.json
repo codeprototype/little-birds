@@ -13,9 +13,9 @@
     "start": "node dist/app.js",
     "dev": "nodemon app.ts"
   },
-  "author": "",
+  "author": "Maaz Abdullah",
   "license": "ISC",
-  "description": "",
+  "description": "node service for ppu",
   "devDependencies": {
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",

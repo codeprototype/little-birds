@@ -1,6 +1,7 @@
 import express from "express";
 const app = express();
 import winston from "winston";
+import castleBlack from "./castleblack";
 
 const logger = winston.createLogger({
   level: "info",
@@ -13,7 +14,7 @@ app.use((req, res, next) => {
     method: req.method,
     url: req.url,
     statusCode: res.statusCode,
-    responseTime: Date.now() 
+    responseTime: Date.now()
   });
   next();
 });
