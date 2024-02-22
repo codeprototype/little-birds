@@ -2,6 +2,25 @@ import AWS from "aws-sdk";
 import 'dotenv/config';
 const config = process.env;
 
+export interface awsData {
+  IsTruncated:    boolean;
+  Contents:       Content[];
+  Name:           string;
+  Prefix:         string;
+  MaxKeys:        number;
+  CommonPrefixes: any[];
+  KeyCount:       number;
+}
+
+export interface Content {
+  Key:               string;
+  LastModified:      string;
+  ETag:              string;
+  ChecksumAlgorithm: any[];
+  Size:              number;
+  StorageClass:      string;
+}
+
 AWS.config.update({
   accessKeyId: config.AWS_ACCESS_KEY,
   secretAccessKey: config.AWS_SECRET_KEY,
@@ -32,8 +51,7 @@ const uploadFileToS3 = async (
     if (nocache) {
       objectParams["CacheControl"] = "no-cache";
     }
-    new AWS.S3()
-      .putObject(objectParams)
+    s3.putObject(objectParams)
       .promise()
       .then((res) => {
         resolve(true);
@@ -45,19 +63,15 @@ const uploadFileToS3 = async (
   });
 };
 
-const s3UrlToBuffer = (bucket: string, url: string) => {
+const listS3File = (bucket: any, url?: string) => {
   return new Promise(async (resolve, reject) => {
     try {
-      s3.getObject(
+      const data:any = await s3.listObjectsV2(
         {
-          Bucket: bucket,
-          Key: url,
-        },
-        function (err, data) {
-          if (err) return reject(err);
-          else return resolve(data);
-        }
-      );
+          Bucket: bucket
+        });
+        return resolve(data.Contents)
+        
     } catch (err) {
       reject(err);
     }
@@ -66,5 +80,5 @@ const s3UrlToBuffer = (bucket: string, url: string) => {
 
 export  {
   uploadFileToS3,
-  s3UrlToBuffer,
+  listS3File,
 };

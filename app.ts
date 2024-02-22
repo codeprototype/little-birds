@@ -1,17 +1,19 @@
 import express from "express";
 const app = express();
 import winston from "winston";
-import fileUpload from 'express-fileupload';
-import { uploadFileToS3 } from "./castleblack";
-import 'dotenv/config';
-app.use(express.json())
+import fileUpload from "express-fileupload";
+import { uploadFileToS3, listS3File } from "./castleblack";
+import "dotenv/config";
+app.use(express.json());
 app.use(fileUpload());
+const config = process.env;
 
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.json(),
   transports: [new winston.transports.Console()],
 });
+
 
 app.use((req, res, next) => {
   logger.info({
@@ -30,25 +32,42 @@ app.get("/", (req, res) => {
   });
 });
 
-app.post("/castleblack", async (req:any, res) => {
-  const file = req.files && req.files.file;
-  if (!file) {
-    throw new Error("Please pass all required parameters");
-  }
+app.post("/castleblack/upload", async (req: any, res) => {
+  try {
+    const file = req.files && req.files.file;
+    if (!file) {
+      throw new Error("Please pass all required parameters");
+    }
 
-  const extData = file.mimetype.split("/")[1];
-  let file_name = file.name || "uuid.v4()" + "." + extData;
-  file_name = file_name.replace(/\s+/g, " ");
-  file_name = file_name.replace(/ /g, "_");
-  file_name = file_name.replace(/\.+$/, "");
-  const fileBucket = process.env.AWS_BUCKET_NAME;
-  await uploadFileToS3(file, file_name, fileBucket);
-  const fileUrl = process.env.AWS_PUBLIC_URL + file_name;
-  res.status(200).json({
-    sucess: true,
-    message: "file uploaded succesfully",
-    data: fileUrl,
-  });
+    const extData = file.mimetype.split("/")[1];
+    let file_name = file.name || "uuid.v4()" + "." + extData;
+    file_name = file_name.replace(/\s+/g, " ");
+    file_name = file_name.replace(/ /g, "_");
+    file_name = file_name.replace(/\.+$/, "");
+    const fileBucket = config.AWS_BUCKET_NAME;
+    await uploadFileToS3(file, file_name, fileBucket);
+    const fileUrl = config.AWS_PUBLIC_URL + file_name;
+    res.status(200).json({
+      sucess: true,
+      message: "file uploaded succesfully",
+      data: fileUrl,
+    });
+  } catch (error) {
+    throw error;
+  }
+});
+
+app.get("/castleblack/file", async (req: any, res) => {
+  try {
+    const result = await listS3File(config.AWS_BUCKET_NAME);
+    res.status(200).json({
+      sucess: true,
+      message: "file fetched succesfully",
+      data: result,
+    });
+  } catch (error) {
+    throw error;
+  }
 });
 
 const PORT = process.env.port || 5000;
