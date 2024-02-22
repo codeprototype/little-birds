@@ -1,5 +1,5 @@
 import AWS from "aws-sdk";
-import fs from "fs";
+import 'dotenv/config';
 const config = process.env;
 
 AWS.config.update({
@@ -9,35 +9,41 @@ AWS.config.update({
 });
 
 const s3 = new AWS.S3();
-// const castleBlack =async (params:type) => {
 
-function uploadFileToS3Bucket(
-  fileToBeUploaded: string,
-  bucket_name: string,
-  filename: string,
-  ContentType: any = null
-) {
-  return new Promise((resolve, reject) => {
-    fs.readFile(fileToBeUploaded, function (error, file_buffer) {
-      if (error) {
-        return reject(error);
-      }
-      var params = {
-        Bucket: bucket_name,
-        Key: filename,
-        Body: file_buffer,
-        ACL: "public-read",
-        ContentType: ContentType || "application/pdf",
-      };
-      s3.putObject(params, function (err, data) {
-        if (err) {
-          return reject(err);
-        }
-        return resolve(true);
+const uploadFileToS3 = async (
+  file: any,
+  name: any,
+  bucket:any = null,
+  nocache = null
+) => {
+  return new Promise(async (resolve, reject) => {
+    let s3_bucket = config.AWS_BUCKET_NAME;
+    if (bucket) {
+      s3_bucket = bucket;
+    }
+    let objectParams: any = {
+      Bucket: s3_bucket,
+      Key: name,
+      Body: file.data,
+      ContentType: file.mimetype,
+      ACL: "public-read",
+    };
+    console.log("????", objectParams)
+    if (nocache) {
+      objectParams["CacheControl"] = "no-cache";
+    }
+    new AWS.S3()
+      .putObject(objectParams)
+      .promise()
+      .then((res) => {
+        resolve(true);
+      })
+      .catch((err) => {
+        console.error("Error in uploadFileToS3: " + err.stack);
+        reject(err);
       });
-    });
   });
-}
+};
 
 const s3UrlToBuffer = (bucket: string, url: string) => {
   return new Promise(async (resolve, reject) => {
@@ -58,7 +64,7 @@ const s3UrlToBuffer = (bucket: string, url: string) => {
   });
 };
 
-export default {
-  uploadFileToS3Bucket,
+export  {
+  uploadFileToS3,
   s3UrlToBuffer,
 };
