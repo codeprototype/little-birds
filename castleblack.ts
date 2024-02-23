@@ -74,12 +74,12 @@ const listS3File = (bucket: any, url?: string) => {
         console.log("No objects found in the bucket.");
         return [];
       }
-
+      
       const signedUrlsPromises = keys.map((key) =>
         s3.getSignedUrlPromise("getObject", {
           Bucket: bucket,
           Key: key,
-          Expires: 60 * 5,
+          Expires: 60 * 5,// expires in 5 mins
         })
       );
 
