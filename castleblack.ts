@@ -64,7 +64,7 @@ const uploadFileToS3 = async (
   });
 };
 
-const listS3File = (bucket: any, url?: string) => {
+const listS3File = (bucket: any, key?: string) => {
   return new Promise(async (resolve, reject) => {
     try {
       const data = await s3.listObjectsV2({ Bucket: bucket }).promise();
@@ -92,8 +92,6 @@ const listS3File = (bucket: any, url?: string) => {
   });
 };
 
-// Replace these with your S3 bucket and file names
-
 const processWateronFile = async () => {
   const bucketName = config.AWS_BUCKET_NAME;
   const inputFileName =
@@ -101,8 +99,8 @@ const processWateronFile = async () => {
   const outputFileName = "output-file-name.jpg";
   try {
     let image = await Jimp.read(inputFileName);
-    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE)
-    image = await image.print(font,100, 100, "King of the North!");
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
+    image = await image.print(font, 100, 100, "King of the North!");
     const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
     await s3
       .putObject({
@@ -118,5 +116,62 @@ const processWateronFile = async () => {
   } catch (error) {
     console.error("Error processing or uploading image:", error);
   }
+};
+
+const processImageWatermark = async () => {
+  const watermarkX = 10;
+  const watermarkY = 10;
+  const sourceBucket = "source-bucket";
+  const sourceKey = "source-image.jpg";
+  const watermarkBucket = "watermark-bucket";
+  const watermarkKey = "watermark-image.png"; // PNG with transparency for watermark
+  const outputBucket = "output-bucket";
+  const outputKey = "output-image.jpg";
+
+  try {
+    // Process the images and insert watermark
+    let [sourceImageBuffer, watermarkImageBuffer]: any = await Promise.all([
+      downloadImage(sourceBucket, sourceKey),
+      downloadImage(watermarkBucket, watermarkKey),
+    ]);
+
+    let [sourceImage, watermarkImage] = await Promise.all([
+      Jimp.read(sourceImageBuffer),
+      Jimp.read(watermarkImageBuffer),
+    ]);
+
+    sourceImage = await sourceImage.composite(
+      watermarkImage,
+      watermarkX,
+      watermarkY,
+      {
+        mode: Jimp.BLEND_OVERLAY,
+        opacitySource: 0.5,
+        opacityDest: 0.5,
+      }
+    );
+    let finalImageBuffer = await sourceImage.getBufferAsync(Jimp.MIME_JPEG);
+    await s3
+      .putObject({
+        Bucket: outputBucket!,
+        Key: outputKey,
+        Body: finalImageBuffer,
+        ACL: "public-read",
+        ContentType: "image/jpeg",
+      })
+      .promise();
+
+    console.log("Image processing complete. Final image uploaded to S3.");
+  } catch (error) {
+    console.error("Error:", error);
+  }
+};
+const downloadImage = (bucket: any, key: any) => {
+  return new Promise((resolve, reject) => {
+    s3.getObject({ Bucket: bucket, Key: key }, (err, data) => {
+      if (err) reject(err);
+      else resolve(data.Body);
+    });
+  });
 };
 export { uploadFileToS3, listS3File, processWateronFile };
