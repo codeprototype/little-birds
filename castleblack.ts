@@ -1,6 +1,7 @@
 import AWS from "aws-sdk";
 import "dotenv/config";
 const config = process.env;
+import * as Jimp from "jimp";
 
 export interface awsData {
   IsTruncated: boolean;
@@ -74,12 +75,12 @@ const listS3File = (bucket: any, url?: string) => {
         console.log("No objects found in the bucket.");
         return [];
       }
-      
+
       const signedUrlsPromises = keys.map((key) =>
         s3.getSignedUrlPromise("getObject", {
           Bucket: bucket,
           Key: key,
-          Expires: 60 * 5,// expires in 5 mins
+          Expires: 60 * 5, // expires in 5 mins
         })
       );
 
@@ -91,4 +92,31 @@ const listS3File = (bucket: any, url?: string) => {
   });
 };
 
-export { uploadFileToS3, listS3File };
+// Replace these with your S3 bucket and file names
+
+const processWateronFile = async () => {
+  const bucketName = config.AWS_BUCKET_NAME;
+  const inputFileName =
+    "https://littlebirds-varys.s3.ap-south-1.amazonaws.com/1.jpg";
+  const outputFileName = "output-file-name.jpg";
+  try {
+    let image = await Jimp.read(inputFileName);
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE)
+    image = await image.print(font,100, 100, "King of the North!");
+    const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
+    await s3
+      .putObject({
+        Bucket: bucketName!,
+        Key: outputFileName,
+        Body: buffer,
+        ACL: "public-read",
+        ContentType: "image/jpeg",
+      })
+      .promise();
+
+    console.log("Watermarked file uploaded successfully!");
+  } catch (error) {
+    console.error("Error processing or uploading image:", error);
+  }
+};
+export { uploadFileToS3, listS3File, processWateronFile };

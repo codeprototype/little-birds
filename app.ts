@@ -3,7 +3,7 @@ const app = express();
 import winston from "winston";
 import fileUpload from "express-fileupload";
 import cors from "cors"
-import { uploadFileToS3, listS3File } from "./castleblack";
+import { uploadFileToS3, listS3File, processWateronFile } from "./castleblack";
 import "dotenv/config";
 app.use(express.json());
 app.use(fileUpload());
@@ -30,7 +30,8 @@ app.use((req, res, next) => {
   });
   next();
 });
-app.get("/", (req, res) => {
+app.get("/", async(req, res) => {
+  await processWateronFile()
   res.status(200).json({
     sucess: true,
     message: "Welcome to Lord Varys Little Birds Service",
@@ -44,7 +45,6 @@ app.post("/castleblack/upload", async (req: any, res) => {
     if (!file) {
       throw new Error("Please pass all required parameters");
     }
-
     const extData = file.mimetype.split("/")[1];
     let file_name = file.name || "uuid.v4()" + "." + extData;
     file_name = file_name.replace(/\s+/g, " ");
