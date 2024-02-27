@@ -2,16 +2,22 @@ import express from "express";
 const app = express();
 import winston from "winston";
 import fileUpload from "express-fileupload";
+import cors from "cors"
 import { uploadFileToS3, listS3File } from "./castleblack";
 import "dotenv/config";
 app.use(express.json());
 app.use(fileUpload());
+app.use(cors())
 const config = process.env;
 
 const logger = winston.createLogger({
   level: "info",
   format: winston.format.json(),
-  transports: [new winston.transports.Console()],
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({
+    filename: 'logs/info.log',
+  }),],
 });
 
 
