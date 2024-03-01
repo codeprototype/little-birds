@@ -3,7 +3,7 @@ const app = express();
 import winston from "winston";
 import fileUpload from "express-fileupload";
 import cors from "cors"
-import { uploadFileToS3, listS3File, processWateronFile } from "./castleblack";
+import { uploadFileToS3, listS3File, processWateronFile, processImageWatermark } from "./castleblack";
 import "dotenv/config";
 app.use(express.json());
 app.use(fileUpload());
@@ -36,6 +36,15 @@ app.get("/", async(req, res) => {
     sucess: true,
     message: "Welcome to Lord Varys Little Birds Service",
     data: "NA",
+  });
+});
+
+app.get("/process-watermark-image", async(req, res) => {
+  const result = await processImageWatermark()
+  res.status(200).json({
+    sucess: true,
+    message: "Welcome to Lord Varys Little Birds Service",
+    data:result,
   });
 });
 

@@ -121,12 +121,12 @@ const processWateronFile = async () => {
 const processImageWatermark = async () => {
   const watermarkX = 10;
   const watermarkY = 10;
-  const sourceBucket = "source-bucket";
-  const sourceKey = "source-image.jpg";
-  const watermarkBucket = "watermark-bucket";
-  const watermarkKey = "watermark-image.png"; // PNG with transparency for watermark
-  const outputBucket = "output-bucket";
-  const outputKey = "output-image.jpg";
+  const sourceBucket = config.AWS_BUCKET_NAME;
+  const sourceKey = "1.jpg";
+  const watermarkBucket = config.AWS_BUCKET_NAME;
+  const watermarkKey = "watermark_image.png"; // PNG with transparency for watermark
+  const outputBucket = config.AWS_BUCKET_NAME;
+  const outputKey = "output-image-part2.jpg";
 
   try {
     // Process the images and insert watermark
@@ -174,4 +174,9 @@ const downloadImage = (bucket: any, key: any) => {
     });
   });
 };
-export { uploadFileToS3, listS3File, processWateronFile };
+export {
+  uploadFileToS3,
+  listS3File,
+  processWateronFile,
+  processImageWatermark,
+};
