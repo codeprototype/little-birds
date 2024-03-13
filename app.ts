@@ -1,6 +1,5 @@
 import express from "express";
 const app = express();
-import winston from "winston";
 import fileUpload from "express-fileupload";
 import cors from "cors"
 import { uploadFileToS3, listS3File, processWateronFile, processImageWatermark } from "./castleblack";
