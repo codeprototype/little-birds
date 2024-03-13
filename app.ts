@@ -9,17 +9,7 @@ app.use(express.json());
 app.use(fileUpload());
 app.use(cors())
 const config = process.env;
-
-const logger = winston.createLogger({
-  level: "info",
-  format: winston.format.json(),
-  transports: [
-    new winston.transports.Console(),
-    new winston.transports.File({
-    filename: 'logs/info.log',
-  }),],
-});
-
+import logger from "./modules/loggerModule"
 
 app.use((req, res, next) => {
   logger.info({
