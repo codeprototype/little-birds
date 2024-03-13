@@ -12,10 +12,11 @@
   "name": "little-birds",
   "version": "1.0.0",
   "main": "app.ts",
+  "type": "module",
   "scripts": {
     "build": "npx tsc",
     "start": "node dist/app.js",
-    "dev": "npm run build && nodemon app.ts"
+    "dev": "nodemon app.js"
   },
   "author": "Maaz Abdullah",
   "license": "ISC",

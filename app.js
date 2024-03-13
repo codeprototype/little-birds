@@ -1,15 +1,14 @@
 import express from "express";
 const app = express();
-import winston from "winston";
 import fileUpload from "express-fileupload";
 import cors from "cors"
-import { uploadFileToS3, listS3File, processWateronFile, processImageWatermark } from "./castleblack";
+import { uploadFileToS3, listS3File, processWateronFile, processImageWatermark } from "./castleblack.js";
 import "dotenv/config";
 app.use(express.json());
 app.use(fileUpload());
 app.use(cors())
 const config = process.env;
-import logger from "./modules/loggerModule"
+import logger from "./modules/loggerModule.js"
 
 app.use((req, res, next) => {
   logger.info({
@@ -38,7 +37,7 @@ app.get("/process-watermark-image", async(req, res) => {
   });
 });
 
-app.post("/castleblack/upload", async (req: any, res) => {
+app.post("/castleblack/upload", async (req, res) => {
   try {
     const file = req.files && req.files.file;
     if (!file) {
@@ -62,7 +61,7 @@ app.post("/castleblack/upload", async (req: any, res) => {
   }
 });
 
-app.get("/castleblack/file", async (req: any, res) => {
+app.get("/castleblack/file", async (req, res) => {
   try {
     const result = await listS3File(config.AWS_BUCKET_NAME);
     res.status(200).json({

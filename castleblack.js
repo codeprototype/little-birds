@@ -1,26 +1,7 @@
 import AWS from "aws-sdk";
 import "dotenv/config";
 const config = process.env;
-import * as Jimp from "jimp";
-
-export interface awsData {
-  IsTruncated: boolean;
-  Contents: Content[];
-  Name: string;
-  Prefix: string;
-  MaxKeys: number;
-  CommonPrefixes: any[];
-  KeyCount: number;
-}
-
-export interface Content {
-  Key: string;
-  LastModified: string;
-  ETag: string;
-  ChecksumAlgorithm: any[];
-  Size: number;
-  StorageClass: string;
-}
+import Jimp from "jimp";
 
 AWS.config.update({
   accessKeyId: config.AWS_ACCESS_KEY,
@@ -31,9 +12,9 @@ AWS.config.update({
 const s3 = new AWS.S3();
 
 const uploadFileToS3 = async (
-  file: any,
-  name: any,
-  bucket: any = null,
+  file,
+  name,
+  bucket = null,
   nocache = null
 ) => {
   return new Promise(async (resolve, reject) => {
@@ -41,7 +22,7 @@ const uploadFileToS3 = async (
     if (bucket) {
       s3_bucket = bucket;
     }
-    let objectParams: any = {
+    let objectParams = {
       Bucket: s3_bucket,
       Key: name,
       Body: file.data,
@@ -64,7 +45,7 @@ const uploadFileToS3 = async (
   });
 };
 
-const listS3File = (bucket: any, key?: string) => {
+const listS3File = (bucket, key) => {
   return new Promise(async (resolve, reject) => {
     try {
       const data = await s3.listObjectsV2({ Bucket: bucket }).promise();
@@ -104,7 +85,7 @@ const processWateronFile = async () => {
     const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
     await s3
       .putObject({
-        Bucket: bucketName!,
+        Bucket: bucketName,
         Key: outputFileName,
         Body: buffer,
         ACL: "public-read",
@@ -130,7 +111,7 @@ const processImageWatermark = async () => {
 
   try {
     // Process the images and insert watermark
-    let [sourceImageBuffer, watermarkImageBuffer]: any = await Promise.all([
+    let [sourceImageBuffer, watermarkImageBuffer] = await Promise.all([
       downloadImage(sourceBucket, sourceKey),
       downloadImage(watermarkBucket, watermarkKey),
     ]);
@@ -153,7 +134,7 @@ const processImageWatermark = async () => {
     let finalImageBuffer = await sourceImage.getBufferAsync(Jimp.MIME_JPEG);
     await s3
       .putObject({
-        Bucket: outputBucket!,
+        Bucket: outputBucket,
         Key: outputKey,
         Body: finalImageBuffer,
         ACL: "public-read",
@@ -166,7 +147,7 @@ const processImageWatermark = async () => {
     console.error("Error:", error);
   }
 };
-const downloadImage = (bucket: any, key: any) => {
+const downloadImage = (bucket, key) => {
   return new Promise((resolve, reject) => {
     s3.getObject({ Bucket: bucket, Key: key }, (err, data) => {
       if (err) reject(err);
