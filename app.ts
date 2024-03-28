@@ -1,14 +1,19 @@
 import express from "express";
 const app = express();
 import fileUpload from "express-fileupload";
-import cors from "cors"
-import { uploadFileToS3, listS3File, processWateronFile, processImageWatermark } from "./castleblack";
+import cors from "cors";
+import {
+  uploadFileToS3,
+  listS3File,
+  processImageWatermark,
+} from "./castleblack";
 import "dotenv/config";
 app.use(express.json());
 app.use(fileUpload());
-app.use(cors())
+app.use(cors());
 const config = process.env;
-import logger from "./modules/loggerModule"
+import logger from "./modules/loggerModule";
+import * as castleBlackConstant from "./castleblackConstants";
 
 app.use((req, res, next) => {
   logger.info({
@@ -19,21 +24,20 @@ app.use((req, res, next) => {
   });
   next();
 });
-app.get("/", async(req, res) => {
-  await processWateronFile()
+app.get("/", async (req, res) => {
   res.status(200).json({
     sucess: true,
     message: "Welcome to Lord Varys Little Birds Service",
-    data: "NA",
+    data: "HealthCheck OK!",
   });
 });
 
-app.get("/process-watermark-image", async(req, res) => {
-  const result = await processImageWatermark()
+app.get("/process-watermark-image", async (req, res) => {
+  const result = await processImageWatermark("1.jpg", "maaz");
   res.status(200).json({
     sucess: true,
     message: "Welcome to Lord Varys Little Birds Service",
-    data:result,
+    data: result,
   });
 });
 
@@ -43,14 +47,27 @@ app.post("/castleblack/upload", async (req: any, res) => {
     if (!file) {
       throw new Error("Please pass all required parameters");
     }
+    const username = req.body && req.body.userName;
+    let isWatermarkProcess: boolean = false;
+    if (username) {
+      isWatermarkProcess = true;
+    }
     const extData = file.mimetype.split("/")[1];
     let file_name = file.name || "uuid.v4()" + "." + extData;
     file_name = file_name.replace(/\s+/g, " ");
     file_name = file_name.replace(/ /g, "_");
     file_name = file_name.replace(/\.+$/, "");
     const fileBucket = config.AWS_BUCKET_NAME;
-    await uploadFileToS3(file, file_name, fileBucket);
-    const fileUrl = config.AWS_PUBLIC_URL + file_name;
+    await uploadFileToS3(
+      file,
+      file_name,
+      fileBucket,
+      isWatermarkProcess,
+      username
+    );
+    const fileUrl =
+      config.AWS_PUBLIC_URL +
+      (isWatermarkProcess ? castleBlackConstant.outputKey : file_name);
     res.status(200).json({
       sucess: true,
       message: "file uploaded succesfully",

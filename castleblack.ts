@@ -2,6 +2,8 @@ import AWS from "aws-sdk";
 import "dotenv/config";
 const config = process.env;
 import * as Jimp from "jimp";
+import logger from "./modules/loggerModule";
+import * as castleBlackConstant from "./castleblackConstants";
 
 export interface awsData {
   IsTruncated: boolean;
@@ -32,8 +34,10 @@ const s3 = new AWS.S3();
 
 const uploadFileToS3 = async (
   file: any,
-  name: any,
+  name: string,
   bucket: any = null,
+  isWatermarkProcessable: boolean,
+  userName: string,
   nocache = null
 ) => {
   return new Promise(async (resolve, reject) => {
@@ -48,9 +52,11 @@ const uploadFileToS3 = async (
       ContentType: file.mimetype,
       ACL: "public-read",
     };
-    console.log("????", objectParams);
     if (nocache) {
       objectParams["CacheControl"] = "no-cache";
+    }
+    if (isWatermarkProcessable) {
+      objectParams = await processImageWatermark(name, userName);
     }
     s3.putObject(objectParams)
       .promise()
@@ -92,41 +98,15 @@ const listS3File = (bucket: any, key?: string) => {
   });
 };
 
-const processWateronFile = async () => {
-  const bucketName = config.AWS_BUCKET_NAME;
-  const inputFileName =
-    "https://littlebirds-varys.s3.ap-south-1.amazonaws.com/1.jpg";
-  const outputFileName = "output-file-name.jpg";
-  try {
-    let image = await Jimp.read(inputFileName);
-    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
-    image = await image.print(font, 100, 100, "King of the North!");
-    const buffer = await image.getBufferAsync(Jimp.MIME_JPEG);
-    await s3
-      .putObject({
-        Bucket: bucketName!,
-        Key: outputFileName,
-        Body: buffer,
-        ACL: "public-read",
-        ContentType: "image/jpeg",
-      })
-      .promise();
-
-    console.log("Watermarked file uploaded successfully!");
-  } catch (error) {
-    console.error("Error processing or uploading image:", error);
-  }
-};
-
-const processImageWatermark = async () => {
-  const watermarkX = 10;
-  const watermarkY = 10;
+const processImageWatermark = async (filename: string, username: string) => {
+  const watermarkX = castleBlackConstant.watermarkX;
+  const watermarkY = castleBlackConstant.watermarkY;
   const sourceBucket = config.AWS_BUCKET_NAME;
-  const sourceKey = "1.jpg";
+  const sourceKey = filename;
   const watermarkBucket = config.AWS_BUCKET_NAME;
-  const watermarkKey = "watermark_image.png"; // PNG with transparency for watermark
+  const watermarkKey = castleBlackConstant.watermarkKey;
   const outputBucket = config.AWS_BUCKET_NAME;
-  const outputKey = "output-image-part2.jpg";
+  const outputKey = castleBlackConstant.outputKey;
 
   try {
     // Process the images and insert watermark
@@ -150,18 +130,16 @@ const processImageWatermark = async () => {
         opacityDest: 0.5,
       }
     );
+    sourceImage = await processTextWaterMark(sourceImage, username);
     let finalImageBuffer = await sourceImage.getBufferAsync(Jimp.MIME_JPEG);
-    await s3
-      .putObject({
-        Bucket: outputBucket!,
-        Key: outputKey,
-        Body: finalImageBuffer,
-        ACL: "public-read",
-        ContentType: "image/jpeg",
-      })
-      .promise();
-
-    console.log("Image processing complete. Final image uploaded to S3.");
+    logger.info("Image processing complete. Final image uploaded to S3.");
+    return {
+      Bucket: outputBucket!,
+      Key: outputKey,
+      Body: finalImageBuffer,
+      ACL: "public-read",
+      ContentType: "image/jpeg",
+    };
   } catch (error) {
     console.error("Error:", error);
   }
@@ -174,9 +152,19 @@ const downloadImage = (bucket: any, key: any) => {
     });
   });
 };
+const processTextWaterMark = async (sourceImage: any, username: string) => {
+  try {
+    const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);
+    let sourceImageBuffer = await sourceImage.print(font, 150, 220, username);
+    logger.info("Watermarked file uploaded successfully!");
+    return sourceImageBuffer;
+  } catch (error) {
+    console.error("Error processing or  image:", error);
+  }
+};
 export {
   uploadFileToS3,
   listS3File,
-  processWateronFile,
+  processTextWaterMark,
   processImageWatermark,
 };
