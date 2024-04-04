@@ -74,9 +74,7 @@ const listS3File = (bucket: any, key?: string) => {
   return new Promise(async (resolve, reject) => {
     try {
       const data = await s3.listObjectsV2({ Bucket: bucket }).promise();
-
       const keys = data.Contents?.map((obj) => obj.Key) || [];
-
       if (keys.length === 0) {
         console.log("No objects found in the bucket.");
         return [];
@@ -89,9 +87,11 @@ const listS3File = (bucket: any, key?: string) => {
           Expires: 60 * 5, // expires in 5 mins
         })
       );
-
       const signedUrls = await Promise.all(signedUrlsPromises);
-      return resolve(signedUrls);
+      return resolve({
+        data: signedUrls,
+        keys:keys
+      });
     } catch (err) {
       reject(err);
     }
