@@ -2,7 +2,7 @@ import AWS from "aws-sdk";
 import "dotenv/config";
 const config = process.env;
 import * as Jimp from "jimp";
-import logger from "./modules/loggerModule";
+import logger from "../modules/loggerModule";
 import * as castleBlackConstant from "./castleblackConstants";
 
 export interface awsData {
@@ -85,7 +85,7 @@ const listS3File = (bucket: any, key?: string) => {
       const signedUrls = await Promise.all(signedUrlsPromises);
       return resolve({
         data: signedUrls,
-        keys:keys
+        keys: keys,
       });
     } catch (err) {
       reject(err);
@@ -127,22 +127,24 @@ const processImageWatermark = async (filename: any, username: any) => {
     );
     sourceImage = await processTextWaterMark(sourceImage, username);
     let finalImageBuffer = await sourceImage.getBufferAsync(Jimp.MIME_JPEG);
-    logger.info(`Image processing complete. Final image ${filename} uploaded to S3.`);
+    logger.info(
+      `Image processing complete. Final image ${filename} uploaded to S3.`
+    );
 
-    let objectParams= {
+    let objectParams = {
       Bucket: outputBucket!,
-      Key: outputFolder+filename,
+      Key: outputFolder + filename,
       Body: finalImageBuffer,
       ACL: "public-read",
       ContentType: "image/jpeg",
     };
-    await s3.putObject(objectParams)
-    .promise()
-    return true
+    await s3.putObject(objectParams).promise();
+    return true;
   } catch (error) {
     console.error("Error:", error);
   }
 };
+
 const downloadImage = (bucket: any, key: any) => {
   return new Promise((resolve, reject) => {
     s3.getObject({ Bucket: bucket, Key: key }, (err, data) => {
@@ -151,6 +153,7 @@ const downloadImage = (bucket: any, key: any) => {
     });
   });
 };
+
 const processTextWaterMark = async (sourceImage: any, username: string) => {
   try {
     const font = await Jimp.loadFont(Jimp.FONT_SANS_32_WHITE);

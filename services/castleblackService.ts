@@ -2,9 +2,10 @@ import {
   uploadFileToS3,
   listS3File,
   processImageWatermark,
-} from "../castleblack";
+} from "../utils/castleblack";
 import connection from "../modules/dbconnection";
 import "dotenv/config";
+import logger from "../modules/loggerModule";
 const config = process.env;
 
 const uploadFile = async (
@@ -58,22 +59,20 @@ const listFile = async (fileBucket: any) => {
 };
 const processFinalWaterMark = async (data: any) => {
   try {
-
     for (const elem of data){
         const sql = `UPDATE castleblack SET  status = ? WHERE imagekey = ?`;
         connection.query(sql, [elem.status, elem.imagekey], (error, results) => {
             if (error) {
                 console.error('Error updating record:', error);
             } else {
-                console.log('Record updated successfully:', results);
+                logger.info('Record updated successfully:', results);
             }
         });
     }
     //filter out the Approved Request only
     data = data.filter((i: { status: string }) => i.status == "Accepted");
     for (const ele of data) {
-      //await processImageWatermark(ele.imagekey, ele.username);
-
+      await processImageWatermark(ele.imagekey, ele.username);
     }
     return true
   } catch (error) {

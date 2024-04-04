@@ -1,7 +1,7 @@
 import castleblackService from "../services/castleblackService";
 import "dotenv/config";
 const config = process.env;
-import * as castleBlackConstant from "../castleblackConstants";
+import * as castleBlackConstant from "../utils/castleblackConstants";
 
 const upload = async (req: any, res: any) => {
   try {
