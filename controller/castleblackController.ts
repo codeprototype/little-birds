@@ -75,9 +75,27 @@ const listFile = async (req: any, res: any) => {
     });
   }
 };
+const processFinalWaterMark = async (req: any, res: any) => {
+    try {
+        const payload = req.body
+        const result = await castleblackService.processFinalWaterMark(payload);
+      res.status(200).json({
+        sucess: true,
+        message: "Processed Watermark on File succesfully",
+        data: result,
+      });
+    } catch (error) {
+      res.status(500).json({
+        sucess: false,
+        message: error,
+        error: "Error while processing watermark on file",
+      });
+    }
+  };
 
 export default {
   processWaterMark,
   upload,
   listFile,
+  processFinalWaterMark
 };

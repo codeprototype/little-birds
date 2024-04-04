@@ -22,13 +22,13 @@ const uploadFile = async (
   username: string
 ) => {
   try {
-    // await uploadFileToS3(
-    //   file,
-    //   file_name,
-    //   fileBucket,
-    //   false,
-    //   username
-    // );
+    await uploadFileToS3(
+      file,
+      file_name,
+      fileBucket,
+      false,
+      username
+    );
     const sql = `INSERT INTO castleblack (imagekey, username) VALUES (?, ?)`;
     connection.query(sql, [file_name, username], (error: any, results: any) => {
       if (error) {
@@ -71,9 +71,17 @@ const listFile = async (fileBucket: any) => {
     return error;
   }
 };
+const processFinalWaterMark = async (fileBucket: any) => {
+    try {
+     
+    } catch (error) {
+      return error;
+    }
+  };
 
 export default {
   processWaterMark,
   uploadFile,
   listFile,
+  processFinalWaterMark
 };

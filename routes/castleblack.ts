@@ -8,4 +8,6 @@ router.post(
 );
 router.post("/castleblack/upload", castleblackController.upload);
 router.get("/castleblack/file", castleblackController.listFile);
+router.post("/castleblack/process-final-watermark", castleblackController.processFinalWaterMark);
+
 export default router;
