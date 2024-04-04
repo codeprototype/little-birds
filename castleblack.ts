@@ -36,8 +36,6 @@ const uploadFileToS3 = async (
   file: any,
   name: string,
   bucket: any = null,
-  isWatermarkProcessable: boolean,
-  userName: string,
   nocache = null
 ) => {
   return new Promise(async (resolve, reject) => {
@@ -54,9 +52,6 @@ const uploadFileToS3 = async (
     };
     if (nocache) {
       objectParams["CacheControl"] = "no-cache";
-    }
-    if (isWatermarkProcessable) {
-      objectParams = await processImageWatermark(name, userName);
     }
     s3.putObject(objectParams)
       .promise()
@@ -132,7 +127,7 @@ const processImageWatermark = async (filename: any, username: any) => {
     );
     sourceImage = await processTextWaterMark(sourceImage, username);
     let finalImageBuffer = await sourceImage.getBufferAsync(Jimp.MIME_JPEG);
-    logger.info("Image processing complete. Final image uploaded to S3.");
+    logger.info(`Image processing complete. Final image ${filename} uploaded to S3.`);
 
     let objectParams= {
       Bucket: outputBucket!,
@@ -144,7 +139,6 @@ const processImageWatermark = async (filename: any, username: any) => {
     await s3.putObject(objectParams)
     .promise()
     return true
-   
   } catch (error) {
     console.error("Error:", error);
   }

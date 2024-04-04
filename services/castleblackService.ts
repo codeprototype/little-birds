@@ -11,11 +11,10 @@ const uploadFile = async (
   file: any,
   file_name: string,
   fileBucket: any,
-  isWatermarkProcess: boolean,
   username: string
 ) => {
   try {
-    await uploadFileToS3(file, file_name, fileBucket, false, username);
+    await uploadFileToS3(file, file_name, fileBucket);
     const sql = `INSERT INTO castleblack (imagekey, username) VALUES (?, ?)`;
     connection.query(sql, [file_name, username], (error: any, results: any) => {
       if (error) {
@@ -59,11 +58,24 @@ const listFile = async (fileBucket: any) => {
 };
 const processFinalWaterMark = async (data: any) => {
   try {
-    //filter out the Approved Request only
-    data = data.filter((i: { status: string }) => i.status == "Approved");
-    for (let ele of data) {
-      await processImageWatermark(ele.imagekey, ele.username);
+
+    for (const elem of data){
+        const sql = `UPDATE castleblack SET  status = ? WHERE imagekey = ?`;
+        connection.query(sql, [elem.status, elem.imagekey], (error, results) => {
+            if (error) {
+                console.error('Error updating record:', error);
+            } else {
+                console.log('Record updated successfully:', results);
+            }
+        });
     }
+    //filter out the Approved Request only
+    data = data.filter((i: { status: string }) => i.status == "Accepted");
+    for (const ele of data) {
+      //await processImageWatermark(ele.imagekey, ele.username);
+
+    }
+    return true
   } catch (error) {
     return error;
   }

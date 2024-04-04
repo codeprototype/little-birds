@@ -10,28 +10,14 @@ const upload = async (req: any, res: any) => {
       throw new Error("Please pass all required parameters");
     }
     const username = req.body && req.body.userName;
-    let isWatermarkProcess: boolean = false;
-    if (username) {
-      isWatermarkProcess = true;
-    }
     const extData = file.mimetype.split("/")[1];
     let file_name = file.name || "uuid.v4()" + "." + extData;
     file_name = file_name.replace(/\s+/g, " ");
     file_name = file_name.replace(/ /g, "_");
     file_name = file_name.replace(/\.+$/, "");
     const fileBucket = config.AWS_BUCKET_NAME;
-    await castleblackService.uploadFile(
-      file,
-      file_name,
-      fileBucket,
-      isWatermarkProcess,
-      username
-    );
-    const fileUrl =
-      config.AWS_PUBLIC_URL +
-      (isWatermarkProcess
-        ? castleBlackConstant.outputFolder + file_name
-        : file_name);
+    await castleblackService.uploadFile(file, file_name, fileBucket, username);
+    const fileUrl = config.AWS_PUBLIC_URL + file_name;
     res.status(200).json({
       sucess: true,
       message: "file uploaded succesfully",
