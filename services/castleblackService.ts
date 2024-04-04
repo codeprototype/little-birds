@@ -22,13 +22,7 @@ const uploadFile = async (
   username: string
 ) => {
   try {
-    await uploadFileToS3(
-      file,
-      file_name,
-      fileBucket,
-      false,
-      username
-    );
+    await uploadFileToS3(file, file_name, fileBucket, false, username);
     const sql = `INSERT INTO castleblack (imagekey, username) VALUES (?, ?)`;
     connection.query(sql, [file_name, username], (error: any, results: any) => {
       if (error) {
@@ -49,43 +43,42 @@ const listFile = async (fileBucket: any) => {
     const { keys }: any = await listS3File(fileBucket);
     const placeholders = keys.map(() => "?").join(",");
     const sql = `SELECT * FROM castleblack WHERE imagekey IN (${placeholders})`;
-   const results:any = await connection.promise().query(sql, keys)
+    const results: any = await connection.promise().query(sql, keys);
 
-      keys
-        .map((key: any) => {
-          const record = results[0].find(
-            (row: { imagekey: any }) => row.imagekey === key
-          );
-          if (record) {
-            finalData.push({
-              url: config.AWS_PUBLIC_URL + key,
-              ...record,
-            });
-          }
-        })
-        .filter(Boolean);
-    
+    keys
+      .map((key: any) => {
+        const record = results[0].find(
+          (row: { imagekey: any }) => row.imagekey === key
+        );
+        if (record) {
+          finalData.push({
+            url: config.AWS_PUBLIC_URL + key,
+            ...record,
+          });
+        }
+      })
+      .filter(Boolean);
 
     return finalData;
   } catch (error) {
     return error;
   }
 };
-const processFinalWaterMark = async (data:any) => {
-    try {
-        //filter out the Approved Request only
-        data = data.filter((i: { status: string; })=>i.status=='Approved')
-        for(let ele of data){
-            await processImageWatermark(ele.imagekey, ele.username)
-     }
-    } catch (error) {
-      return error;
+const processFinalWaterMark = async (data: any) => {
+  try {
+    //filter out the Approved Request only
+    data = data.filter((i: { status: string }) => i.status == "Approved");
+    for (let ele of data) {
+      await processImageWatermark(ele.imagekey, ele.username);
     }
-  };
+  } catch (error) {
+    return error;
+  }
+};
 
 export default {
   processWaterMark,
   uploadFile,
   listFile,
-  processFinalWaterMark
+  processFinalWaterMark,
 };
