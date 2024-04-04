@@ -6,14 +6,7 @@ import {
 import connection from "../modules/dbconnection";
 import "dotenv/config";
 const config = process.env;
-const processWaterMark = async () => {
-  try {
-    await processImageWatermark("1.jpg", "Maaz");
-    return true;
-  } catch (error) {
-    return error;
-  }
-};
+
 const uploadFile = async (
   file: any,
   file_name: string,
@@ -77,7 +70,6 @@ const processFinalWaterMark = async (data: any) => {
 };
 
 export default {
-  processWaterMark,
   uploadFile,
   listFile,
   processFinalWaterMark,
