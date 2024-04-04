@@ -71,9 +71,13 @@ const listFile = async (fileBucket: any) => {
     return error;
   }
 };
-const processFinalWaterMark = async (fileBucket: any) => {
+const processFinalWaterMark = async (data:any) => {
     try {
-     
+        //filter out the Approved Request only
+        data = data.filter((i: { status: string; })=>i.status=='Approved')
+        for(let ele of data){
+            await processImageWatermark(ele.imagekey, ele.username)
+     }
     } catch (error) {
       return error;
     }

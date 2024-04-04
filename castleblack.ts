@@ -98,7 +98,7 @@ const listS3File = (bucket: any, key?: string) => {
   });
 };
 
-const processImageWatermark = async (filename: string, username: string) => {
+const processImageWatermark = async (filename: any, username: any) => {
   const watermarkX = castleBlackConstant.watermarkX;
   const watermarkY = castleBlackConstant.watermarkY;
   const sourceBucket = config.AWS_BUCKET_NAME;
@@ -106,7 +106,7 @@ const processImageWatermark = async (filename: string, username: string) => {
   const watermarkBucket = config.AWS_BUCKET_NAME;
   const watermarkKey = castleBlackConstant.watermarkKey;
   const outputBucket = config.AWS_BUCKET_NAME;
-  const outputKey = castleBlackConstant.outputKey;
+  const outputFolder = castleBlackConstant.outputFolder;
 
   try {
     // Process the images and insert watermark
@@ -133,13 +133,18 @@ const processImageWatermark = async (filename: string, username: string) => {
     sourceImage = await processTextWaterMark(sourceImage, username);
     let finalImageBuffer = await sourceImage.getBufferAsync(Jimp.MIME_JPEG);
     logger.info("Image processing complete. Final image uploaded to S3.");
-    return {
+
+    let objectParams= {
       Bucket: outputBucket!,
-      Key: outputKey,
+      Key: outputFolder+filename,
       Body: finalImageBuffer,
       ACL: "public-read",
       ContentType: "image/jpeg",
     };
+    await s3.putObject(objectParams)
+    .promise()
+    return true
+   
   } catch (error) {
     console.error("Error:", error);
   }

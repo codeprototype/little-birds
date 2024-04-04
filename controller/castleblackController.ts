@@ -45,7 +45,7 @@ const upload = async (req: any, res: any) => {
     );
     const fileUrl =
       config.AWS_PUBLIC_URL +
-      (isWatermarkProcess ? castleBlackConstant.outputKey : file_name);
+      (isWatermarkProcess ? castleBlackConstant.outputFolder+file_name : file_name);
     res.status(200).json({
       sucess: true,
       message: "file uploaded succesfully",
